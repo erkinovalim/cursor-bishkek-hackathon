@@ -87,7 +87,7 @@ export class HttpChallengeApiClient implements ChallengeApiClient {
   ) {
     return this.request<SubmitProofResponse>(
       `/api/v1/challenges/${challengeId}/steps/${body.stepId}/complete?participant_id=${participantId}`,
-      { method: "POST", body: JSON.stringify({ message: body.message }) },
+      { method: "POST", body: JSON.stringify(body) },
     );
   }
 

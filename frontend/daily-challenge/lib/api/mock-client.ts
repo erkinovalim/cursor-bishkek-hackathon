@@ -160,7 +160,7 @@ export class MockChallengeApiClient implements ChallengeApiClient {
     const step = this.challenge.steps.find((s) => s.id === body.stepId);
     if (!step) throw new Error("Step not found");
 
-    if (!body.message.trim()) {
+    if (!body.message?.trim() && !body.imageData) {
       throw new Error("Proof is required");
     }
 

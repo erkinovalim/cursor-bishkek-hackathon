@@ -12,7 +12,7 @@ export function QuestPage() {
     <>
       <PageHeader
         title="Quest steps"
-        description="Work through each step in order. Select a step, add your proof, and mark it complete."
+        description="Work through each step in order. Upload a photo or add a note as proof, then mark it complete."
       />
 
       {!participant && (

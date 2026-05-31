@@ -30,7 +30,10 @@ export interface Participant {
 
 export interface ProofSubmission {
   stepId: string;
-  message: string;
+  message?: string;
+  /** Base64 data URL — FastAPI can decode or switch to multipart upload later */
+  imageData?: string;
+  imageName?: string;
 }
 
 export interface Certificate {

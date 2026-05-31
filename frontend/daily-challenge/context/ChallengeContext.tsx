@@ -15,6 +15,7 @@ import type {
   DailyChallenge,
   LeaderboardEntry,
   Participant,
+  ProofSubmission,
 } from "@/lib/types";
 
 interface ChallengeContextValue {
@@ -29,7 +30,7 @@ interface ChallengeContextValue {
   completingStepId: string | null;
   setSelectedStepId: (stepId: string | null) => void;
   joinQuest: (displayName: string) => Promise<void>;
-  completeStep: (stepId: string, proof: string) => Promise<void>;
+  completeStep: (stepId: string, proof: Omit<ProofSubmission, "stepId">) => Promise<void>;
   finalizeDay: () => Promise<void>;
   refreshLeaderboard: () => Promise<void>;
 }
@@ -101,14 +102,14 @@ export function ChallengeProvider({ children }: { children: ReactNode }) {
   );
 
   const completeStep = useCallback(
-    async (stepId: string, proof: string) => {
+    async (stepId: string, proof: Omit<ProofSubmission, "stepId">) => {
       if (!challenge || !participant) return;
       setError(null);
       setCompletingStepId(stepId);
       try {
         const res = await api.completeStep(challenge.id, participant.id, {
           stepId,
-          message: proof,
+          ...proof,
         });
         setParticipant(res.participant);
         await refreshLeaderboard();
