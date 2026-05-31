@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { ChallengeProvider, useChallenge } from "@/context/ChallengeContext";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { AutoJoinQuest } from "@/components/AutoJoinQuest";
+import { ProfileTab } from "@/components/ProfileTab";
 import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { config } from "@/lib/config";
 
@@ -35,6 +36,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   return (
     <div className="dot-grid flex min-h-full flex-col">
       <AutoJoinQuest />
+      <ProfileTab />
 
       <header className="sticky top-0 z-10 bg-[#f9f9f9]/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-6 py-5">
