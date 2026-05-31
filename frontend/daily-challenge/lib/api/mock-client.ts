@@ -1,7 +1,6 @@
 import type { ChallengeApiClient } from "./client";
 import type {
   Certificate,
-  ChatMessage,
   DailyChallenge,
   JoinChallengeRequest,
   JoinChallengeResponse,
@@ -26,7 +25,7 @@ const MOCK_CHALLENGE: DailyChallenge = {
   title: "Bishkek Explorer Quest",
   theme: "Urban Adventure",
   description:
-    "An AI-crafted daily quest to discover hidden gems, connect with locals, and push your limits across the city. Complete each step and share proof in the chat to earn points.",
+    "An AI-crafted daily quest to discover hidden gems, connect with locals, and push your limits across the city. Complete each step with proof to earn points.",
   generatedAt: new Date().toISOString(),
   endsAt: endOfToday(),
   steps: [
@@ -97,35 +96,6 @@ const MOCK_PARTICIPANTS: Participant[] = [
   },
 ];
 
-const MOCK_CHAT: ChatMessage[] = [
-  {
-    id: "m-1",
-    role: "system",
-    content:
-      "Welcome to today's quest! Submit proof for each step here. An AI moderator will review your submissions.",
-    createdAt: new Date(Date.now() - 7200000).toISOString(),
-  },
-  {
-    id: "m-2",
-    role: "user",
-    content:
-      "Step 1 proof: Got an Americano at Sierra Coffee on Erkindik — never been before, loved the vibe!",
-    stepId: "step-1",
-    participantId: "p-1",
-    createdAt: new Date(Date.now() - 5400000).toISOString(),
-  },
-  {
-    id: "m-3",
-    role: "assistant",
-    content:
-      "Verified! Your coffee scout mission checks out — +25 points. Step 2 is now unlocked for you.",
-    stepId: "step-1",
-    participantId: "p-1",
-    createdAt: new Date(Date.now() - 5390000).toISOString(),
-    pointsAwarded: 25,
-  },
-];
-
 const CERTIFICATE_TEMPLATES = [
   (name: string, rank: number, pts: number, title: string) =>
     `This certifies that ${name} has demonstrated exceptional spirit as Rank #${rank} in "${title}", earning ${pts} quest points through creativity, courage, and community.`,
@@ -136,7 +106,6 @@ const CERTIFICATE_TEMPLATES = [
 export class MockChallengeApiClient implements ChallengeApiClient {
   private challenge = structuredClone(MOCK_CHALLENGE);
   private participants = structuredClone(MOCK_PARTICIPANTS);
-  private chat = structuredClone(MOCK_CHAT);
   private certificates: Certificate[] = [];
   private finalized = false;
 
@@ -166,15 +135,6 @@ export class MockChallengeApiClient implements ChallengeApiClient {
     };
     this.participants.push(participant);
 
-    const welcome: ChatMessage = {
-      id: id(),
-      role: "system",
-      content: `${participant.displayName} joined the quest. Good luck, adventurer!`,
-      participantId: participant.id,
-      createdAt: new Date().toISOString(),
-    };
-    this.chat.push(welcome);
-
     return { participant, challenge: structuredClone(this.challenge) };
   }
 
@@ -187,18 +147,12 @@ export class MockChallengeApiClient implements ChallengeApiClient {
       .map((participant, i) => ({ rank: i + 1, participant }));
   }
 
-  async getChat(challengeId: string): Promise<ChatMessage[]> {
-    void challengeId;
-    await delay(200);
-    return structuredClone(this.chat);
-  }
-
-  async submitProof(
+  async completeStep(
     _challengeId: string,
     participantId: string,
     body: ProofSubmission,
   ): Promise<SubmitProofResponse> {
-    await delay(800);
+    await delay(600);
 
     const participant = this.participants.find((p) => p.id === participantId);
     if (!participant) throw new Error("Participant not found");
@@ -206,43 +160,29 @@ export class MockChallengeApiClient implements ChallengeApiClient {
     const step = this.challenge.steps.find((s) => s.id === body.stepId);
     if (!step) throw new Error("Step not found");
 
+    if (!body.message.trim()) {
+      throw new Error("Proof is required");
+    }
+
     if (participant.completedStepIds.includes(body.stepId)) {
       throw new Error("Step already completed");
     }
 
-    const userMessage: ChatMessage = {
-      id: id(),
-      role: "user",
-      content: body.message.trim(),
-      stepId: body.stepId,
-      participantId,
-      createdAt: new Date().toISOString(),
-    };
-    this.chat.push(userMessage);
+    const stepIndex = this.challenge.steps.findIndex((s) => s.id === body.stepId);
+    if (stepIndex > 0) {
+      const prevStep = this.challenge.steps[stepIndex - 1];
+      if (!participant.completedStepIds.includes(prevStep.id)) {
+        throw new Error("Complete previous steps first");
+      }
+    }
 
     participant.completedStepIds.push(body.stepId);
     participant.points += step.points;
 
-    const assistantReply: ChatMessage = {
-      id: id(),
-      role: "assistant",
-      content: `Proof accepted for "${step.title}"! Great work — +${step.points} points. ${
-        participant.completedStepIds.length < this.challenge.steps.length
-          ? "Your next step awaits."
-          : "You've completed the entire quest!"
-      }`,
-      stepId: body.stepId,
-      participantId,
-      createdAt: new Date().toISOString(),
-      pointsAwarded: step.points,
-    };
-    this.chat.push(assistantReply);
-
     return {
-      message: userMessage,
-      assistantReply,
       participant: structuredClone(participant),
       stepCompleted: true,
+      pointsAwarded: step.points,
     };
   }
 
@@ -270,14 +210,6 @@ export class MockChallengeApiClient implements ChallengeApiClient {
         body: template(p.displayName, i + 1, p.points, this.challenge.title),
       };
     });
-
-    const announce: ChatMessage = {
-      id: id(),
-      role: "system",
-      content: `Day's end! AI certificates issued to the top ${this.certificates.length} adventurers. 🏆`,
-      createdAt: new Date().toISOString(),
-    };
-    this.chat.push(announce);
 
     return structuredClone(this.certificates);
   }

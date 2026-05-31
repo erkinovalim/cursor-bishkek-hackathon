@@ -13,7 +13,6 @@ import { config } from "@/lib/config";
 const NAV = [
   { href: "/", label: "Home" },
   { href: "/quest", label: "Quest" },
-  { href: "/chat", label: "Chat" },
   { href: "/leaderboard", label: "Rankings" },
   { href: "/certificates", label: "Awards" },
 ] as const;

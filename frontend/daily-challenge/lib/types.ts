@@ -28,18 +28,6 @@ export interface Participant {
   joinedAt: string;
 }
 
-export type ChatMessageRole = "user" | "assistant" | "system";
-
-export interface ChatMessage {
-  id: string;
-  role: ChatMessageRole;
-  content: string;
-  stepId?: string;
-  participantId?: string;
-  createdAt: string;
-  pointsAwarded?: number;
-}
-
 export interface ProofSubmission {
   stepId: string;
   message: string;
@@ -72,8 +60,7 @@ export interface JoinChallengeResponse {
 }
 
 export interface SubmitProofResponse {
-  message: ChatMessage;
-  assistantReply: ChatMessage;
   participant: Participant;
   stepCompleted: boolean;
+  pointsAwarded: number;
 }

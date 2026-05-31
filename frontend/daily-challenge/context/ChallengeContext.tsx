@@ -12,7 +12,6 @@ import {
 import { getApiClient } from "@/lib/api";
 import type {
   Certificate,
-  ChatMessage,
   DailyChallenge,
   LeaderboardEntry,
   Participant,
@@ -22,15 +21,15 @@ interface ChallengeContextValue {
   challenge: DailyChallenge | null;
   participant: Participant | null;
   leaderboard: LeaderboardEntry[];
-  chat: ChatMessage[];
   certificates: Certificate[];
   selectedStepId: string | null;
   loading: boolean;
   error: string | null;
   isFinalized: boolean;
+  completingStepId: string | null;
   setSelectedStepId: (stepId: string | null) => void;
   joinQuest: (displayName: string) => Promise<void>;
-  submitProof: (message: string) => Promise<void>;
+  completeStep: (stepId: string, proof: string) => Promise<void>;
   finalizeDay: () => Promise<void>;
   refreshLeaderboard: () => Promise<void>;
 }
@@ -43,9 +42,9 @@ export function ChallengeProvider({ children }: { children: ReactNode }) {
   const [challenge, setChallenge] = useState<DailyChallenge | null>(null);
   const [participant, setParticipant] = useState<Participant | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [chat, setChat] = useState<ChatMessage[]>([]);
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
+  const [completingStepId, setCompletingStepId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isFinalized, setIsFinalized] = useState(false);
@@ -68,13 +67,9 @@ export function ChallengeProvider({ children }: { children: ReactNode }) {
         setChallenge(c);
         setSelectedStepId(c.steps[0]?.id ?? null);
 
-        const [entries, messages] = await Promise.all([
-          api.getLeaderboard(c.id),
-          api.getChat(c.id),
-        ]);
+        const entries = await api.getLeaderboard(c.id);
         if (cancelled) return;
         setLeaderboard(entries);
-        setChat(messages);
       } catch (e) {
         if (!cancelled) {
           setError(e instanceof Error ? e.message : "Failed to load challenge");
@@ -98,8 +93,6 @@ export function ChallengeProvider({ children }: { children: ReactNode }) {
         const res = await api.joinChallenge(challenge.id, { displayName });
         setParticipant(res.participant);
         await refreshLeaderboard();
-        const messages = await api.getChat(challenge.id);
-        setChat(messages);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Failed to join quest");
       }
@@ -107,17 +100,17 @@ export function ChallengeProvider({ children }: { children: ReactNode }) {
     [api, challenge, refreshLeaderboard],
   );
 
-  const submitProof = useCallback(
-    async (message: string) => {
-      if (!challenge || !participant || !selectedStepId) return;
+  const completeStep = useCallback(
+    async (stepId: string, proof: string) => {
+      if (!challenge || !participant) return;
       setError(null);
+      setCompletingStepId(stepId);
       try {
-        const res = await api.submitProof(challenge.id, participant.id, {
-          stepId: selectedStepId,
-          message,
+        const res = await api.completeStep(challenge.id, participant.id, {
+          stepId,
+          message: proof,
         });
         setParticipant(res.participant);
-        setChat((prev) => [...prev, res.message, res.assistantReply]);
         await refreshLeaderboard();
 
         const nextStep = challenge.steps.find(
@@ -125,10 +118,12 @@ export function ChallengeProvider({ children }: { children: ReactNode }) {
         );
         if (nextStep) setSelectedStepId(nextStep.id);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed to submit proof");
+        setError(e instanceof Error ? e.message : "Failed to complete step");
+      } finally {
+        setCompletingStepId(null);
       }
     },
-    [api, challenge, participant, selectedStepId, refreshLeaderboard],
+    [api, challenge, participant, refreshLeaderboard],
   );
 
   const finalizeDay = useCallback(async () => {
@@ -138,8 +133,6 @@ export function ChallengeProvider({ children }: { children: ReactNode }) {
       const certs = await api.finalizeChallenge(challenge.id);
       setCertificates(certs);
       setIsFinalized(true);
-      const messages = await api.getChat(challenge.id);
-      setChat(messages);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to finalize day");
     }
@@ -149,15 +142,15 @@ export function ChallengeProvider({ children }: { children: ReactNode }) {
     challenge,
     participant,
     leaderboard,
-    chat,
     certificates,
     selectedStepId,
     loading,
     error,
     isFinalized,
+    completingStepId,
     setSelectedStepId,
     joinQuest,
-    submitProof,
+    completeStep,
     finalizeDay,
     refreshLeaderboard,
   };

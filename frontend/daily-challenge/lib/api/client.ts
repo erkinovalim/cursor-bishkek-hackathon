@@ -4,7 +4,6 @@ import type {
   JoinChallengeRequest,
   JoinChallengeResponse,
   LeaderboardEntry,
-  ChatMessage,
   ProofSubmission,
   SubmitProofResponse,
 } from "../types";
@@ -15,10 +14,8 @@ import type {
  * GET  /api/v1/challenges/today
  * POST /api/v1/challenges/{challenge_id}/join
  * GET  /api/v1/challenges/{challenge_id}/leaderboard
- * GET  /api/v1/challenges/{challenge_id}/chat
- * POST /api/v1/challenges/{challenge_id}/proof
+ * POST /api/v1/challenges/{challenge_id}/steps/{step_id}/complete
  * POST /api/v1/challenges/{challenge_id}/finalize
- * GET  /api/v1/challenges/{challenge_id}/certificates
  */
 export interface ChallengeApiClient {
   getTodayChallenge(): Promise<DailyChallenge>;
@@ -27,8 +24,7 @@ export interface ChallengeApiClient {
     body: JoinChallengeRequest,
   ): Promise<JoinChallengeResponse>;
   getLeaderboard(challengeId: string): Promise<LeaderboardEntry[]>;
-  getChat(challengeId: string): Promise<ChatMessage[]>;
-  submitProof(
+  completeStep(
     challengeId: string,
     participantId: string,
     body: ProofSubmission,
@@ -84,20 +80,14 @@ export class HttpChallengeApiClient implements ChallengeApiClient {
     );
   }
 
-  getChat(challengeId: string) {
-    return this.request<ChatMessage[]>(
-      `/api/v1/challenges/${challengeId}/chat`,
-    );
-  }
-
-  submitProof(
+  completeStep(
     challengeId: string,
     participantId: string,
     body: ProofSubmission,
   ) {
     return this.request<SubmitProofResponse>(
-      `/api/v1/challenges/${challengeId}/proof?participant_id=${participantId}`,
-      { method: "POST", body: JSON.stringify(body) },
+      `/api/v1/challenges/${challengeId}/steps/${body.stepId}/complete?participant_id=${participantId}`,
+      { method: "POST", body: JSON.stringify({ message: body.message }) },
     );
   }
 

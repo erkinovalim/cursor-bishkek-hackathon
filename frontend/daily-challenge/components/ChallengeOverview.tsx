@@ -7,14 +7,8 @@ const LINKS = [
   {
     href: "/quest",
     label: "Quest steps",
-    description: "View and complete today's challenges",
+    description: "Complete steps and submit proof to earn points",
     badge: "badge-lavender" as const,
-  },
-  {
-    href: "/chat",
-    label: "Proof chat",
-    description: "Submit proof and get verified by AI",
-    badge: "badge-sky" as const,
   },
   {
     href: "/leaderboard",

@@ -12,7 +12,7 @@ export function QuestPage() {
     <>
       <PageHeader
         title="Quest steps"
-        description="Work through each step in order. Select one, then head to chat to submit your proof."
+        description="Work through each step in order. Select a step, add your proof, and mark it complete."
       />
 
       {!participant && (
@@ -26,14 +26,6 @@ export function QuestPage() {
       )}
 
       <ChallengeSteps />
-
-      {participant && (
-        <div className="mt-10 text-center">
-          <Link href="/chat" className="btn-pill inline-flex">
-            Go to proof chat
-          </Link>
-        </div>
-      )}
     </>
   );
 }

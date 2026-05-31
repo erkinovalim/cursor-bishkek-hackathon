@@ -17,7 +17,7 @@ const fraunces = Fraunces({
 
 export const metadata: Metadata = {
   title: "Daily Quest — Challenge Board",
-  description: "AI-generated daily challenges with proof chat, points, and certificates",
+  description: "AI-generated daily challenges, points, and certificates",
 };
 
 export default function RootLayout({
