@@ -41,7 +41,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
         <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-6 py-5">
           <Link href="/" className="group shrink-0">
             <span className="font-serif text-lg font-semibold tracking-tight text-[#1a1a1a] transition group-hover:text-neutral-600">
-              Quest Board
+              QuestUp
             </span>
           </Link>
 

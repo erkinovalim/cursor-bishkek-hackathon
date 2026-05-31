@@ -9,7 +9,7 @@ export function HomeHero() {
 
   return (
     <header className="pb-2 pt-4 text-center">
-      <span className="badge-pill badge-mint">Daily Challenge</span>
+      <span className="badge-pill badge-mint">QuestUp</span>
       <h1 className="font-serif mx-auto mt-5 max-w-lg text-4xl font-semibold leading-tight tracking-tight text-[#1a1a1a] sm:text-5xl">
         {challenge.title}
       </h1>
