@@ -46,13 +46,7 @@ export function ChallengeOverview() {
           <span className="badge-pill badge-lavender">AI Generated</span>
           <span className="badge-pill badge-neutral">{challenge.theme}</span>
         </div>
-        <h3 className="font-serif mt-5 text-3xl font-semibold tracking-tight text-[#1a1a1a]">
-          {challenge.title}
-        </h3>
-        <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-neutral-500">
-          {challenge.description}
-        </p>
-        <dl className="mt-8 flex flex-wrap gap-8">
+        <dl className="mt-6 flex flex-wrap gap-8">
           <div>
             <dt className="text-xs font-medium text-neutral-400">Steps</dt>
             <dd className="font-serif mt-1 text-2xl text-[#1a1a1a]">{totalSteps}</dd>
